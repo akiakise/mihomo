@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"golang.org/x/exp/slices"
 	"io"
 	"runtime"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/metacubex/mihomo/component/resource"
 	C "github.com/metacubex/mihomo/constant"
 	P "github.com/metacubex/mihomo/constant/provider"
+	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/rules/common"
 
 	"gopkg.in/yaml.v3"
@@ -133,7 +135,7 @@ func (rp *RuleSetProvider) Close() error {
 	return rp.ruleSetProvider.Close()
 }
 
-func NewRuleSetProvider(name string, behavior P.RuleBehavior, format P.RuleFormat, interval time.Duration, vehicle P.Vehicle, parse common.ParseRuleFunc) P.RuleProvider {
+func NewRuleSetProvider(name string, behavior P.RuleBehavior, format P.RuleFormat, interval time.Duration, vehicle P.Vehicle, filter []string, parse common.ParseRuleFunc) P.RuleProvider {
 	rp := &ruleSetProvider{
 		baseProvider: baseProvider{
 			behavior: behavior,
@@ -148,7 +150,7 @@ func NewRuleSetProvider(name string, behavior P.RuleBehavior, format P.RuleForma
 
 	rp.strategy = newStrategy(behavior, parse)
 	rp.Fetcher = resource.NewFetcher(name, interval, vehicle, func(bytes []byte) (ruleStrategy, error) {
-		return rulesParse(bytes, newStrategy(behavior, parse), format)
+		return rulesParse(bytes, newStrategy(behavior, parse), format, filter)
 	}, onUpdate)
 
 	wrapper := &RuleSetProvider{
@@ -180,7 +182,7 @@ var (
 	ErrInvalidFormat = errors.New("invalid format")
 )
 
-func rulesParse(buf []byte, strategy ruleStrategy, format P.RuleFormat) (ruleStrategy, error) {
+func rulesParse(buf []byte, strategy ruleStrategy, format P.RuleFormat, filter []string) (ruleStrategy, error) {
 	strategy.Reset()
 	if format == P.MrsRule {
 		return rulesMrsParse(buf, strategy)
@@ -266,7 +268,10 @@ func rulesParse(buf []byte, strategy ruleStrategy, format P.RuleFormat) (ruleStr
 			continue
 		}
 
-		strategy.Insert(str)
+		if filter != nil && slices.Contains(filter, str) {
+			log.Debugln("[ruleParse] skip {} by filter", str)
+			strategy.Insert(str)
+		}
 	}
 
 	strategy.FinishInsert()

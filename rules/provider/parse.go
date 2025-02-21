@@ -26,6 +26,7 @@ type ruleProviderSchema struct {
 	Interval  int      `provider:"interval,omitempty"`
 	SizeLimit int64    `provider:"size-limit,omitempty"`
 	Payload   []string `provider:"payload,omitempty"`
+	Filter    []string `provider:"filter,omitempty"`
 }
 
 func ParseRuleProvider(name string, mapping map[string]any, parse common.ParseRuleFunc) (P.RuleProvider, error) {
@@ -63,5 +64,5 @@ func ParseRuleProvider(name string, mapping map[string]any, parse common.ParseRu
 		return nil, fmt.Errorf("unsupported vehicle type: %s", schema.Type)
 	}
 
-	return NewRuleSetProvider(name, behavior, format, time.Duration(uint(schema.Interval))*time.Second, vehicle, parse), nil
+	return NewRuleSetProvider(name, behavior, format, time.Duration(uint(schema.Interval))*time.Second, vehicle, schema.Filter, parse), nil
 }
