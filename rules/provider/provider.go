@@ -272,9 +272,10 @@ func rulesParse(buf []byte, strategy ruleStrategy, format P.RuleFormat, filter [
 		}
 
 		if filter != nil && slices.Contains(filter, str) {
-			log.Debugln("[ruleParse] skip {} by filter", str)
-			strategy.Insert(str)
+			log.Debugln("[ruleParse] skip %s by filter", str)
+			continue
 		}
+		strategy.Insert(str)
 	}
 
 	strategy.FinishInsert()
