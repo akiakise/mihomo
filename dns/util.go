@@ -207,7 +207,7 @@ func batchExchange(ctx context.Context, clients []dnsClient, m *D.Msg) (msg *D.M
 			}
 			ips := msgToIP(m)
 			end := time.Now().UnixMilli()
-			log.Debugln("[DNS] %s --> %s %s from %s, cost %d", domain, ips, qTypeStr, client.Address(), end-start)
+			log.Debugln("[DNS] %s --> %s %s from %s, cost %dms", domain, ips, qTypeStr, client.Address(), end-start)
 			switch qType {
 			case D.TypeAAAA:
 				if len(ips) == 0 {
