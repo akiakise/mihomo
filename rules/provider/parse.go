@@ -26,6 +26,7 @@ type ruleProviderSchema struct {
 	Interval  int      `provider:"interval,omitempty"`
 	SizeLimit int64    `provider:"size-limit,omitempty"`
 	Payload   []string `provider:"payload,omitempty"`
+	Filter    []string `provider:"filter,omitempty"`
 }
 
 func ParseRuleProvider(name string, mapping map[string]any, parse common.ParseRuleFunc) (P.RuleProvider, error) {
@@ -65,5 +66,5 @@ func ParseRuleProvider(name string, mapping map[string]any, parse common.ParseRu
 
 	interval := time.Duration(uint(schema.Interval)) * time.Second
 
-	return NewRuleSetProvider(name, behavior, format, interval, vehicle, schema.Payload, parse), nil
+	return NewRuleSetProvider(name, behavior, format, interval, vehicle, schema.Payload, schema.Filter, parse), nil
 }
